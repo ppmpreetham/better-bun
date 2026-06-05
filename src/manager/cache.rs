@@ -104,12 +104,12 @@ impl Cache {
         if shared {
             let _guard = rw_lock
                 .read()
-                .map_err(|e| Error::new(ErrorKind::Other, e))?;
+                .map_err(|e| Error::other(e))?;
             op(&target_dir)
         } else {
             let _guard = rw_lock
                 .write()
-                .map_err(|e| Error::new(ErrorKind::Other, e))?;
+                .map_err(|e| Error::other(e))?;
             op(&target_dir)
         }
     }
@@ -317,7 +317,7 @@ impl ContentAddressableStore {
             );
 
         dirs.into_iter()
-            .try_for_each(|dst_p| create_dir_all(dst_p))?;
+            .try_for_each(create_dir_all)?;
 
         let strategy = self.get_strategy();
 
@@ -456,12 +456,11 @@ fn best_effort_remove(path: &Path) {
             .collect();
 
         files.into_par_iter().for_each(|p| {
-            if let Ok(mut perms) = std::fs::metadata(&p).map(|m| m.permissions()) {
-                if perms.readonly() {
+            if let Ok(mut perms) = std::fs::metadata(&p).map(|m| m.permissions())
+                && perms.readonly() {
                     perms.set_readonly(false);
                     let _ = std::fs::set_permissions(&p, perms);
                 }
-            }
         });
     }
 

@@ -31,14 +31,14 @@ impl Cli {
             // TODO: use Rolldown for build
             // TODO: Wire up watch, minify, entry, outdir, outfile, target, format, and external flags here once they're implemented
             types::Commands::Build {
-                watch,
-                minify,
-                entry,
-                outdir,
-                outfile,
-                target,
-                format,
-                external,
+                watch: _,
+                minify: _,
+                entry: _,
+                outdir: _,
+                outfile: _,
+                target: _,
+                format: _,
+                external: _,
                 ..
             } => {
                 println!("build");
