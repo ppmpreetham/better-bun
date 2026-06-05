@@ -50,10 +50,10 @@ pub fn find_test_files(root_path: impl AsRef<Path>, cli_filter: Option<&str>) ->
         .filter_map(|entry| {
             let path = entry.path();
 
-            if let Some(filter) = cli_filter {
-                if !path.to_string_lossy().contains(filter) {
-                    return None;
-                }
+            if let Some(filter) = cli_filter
+                && !path.to_string_lossy().contains(filter)
+            {
+                return None;
             }
 
             Some(path)

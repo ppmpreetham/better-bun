@@ -36,6 +36,7 @@ tempfile = "3.27.0"
 
 # benching
 dhat = "0.3.3"
+pubgrub = "0.4.0"
 
 [profile.release]
 opt-level = 3

@@ -80,8 +80,7 @@ fn read_and_parse<'a>(path: &Path, ctx: &'a mut WorkerContext) -> Result<ParserR
 
     if !parsed.errors.is_empty() {
         let source_arc: Arc<str> = Arc::from(source);
-        let source_service =
-            oxc_diagnostics::NamedSource::new(path.to_string_lossy().into_owned(), source_arc);
+        let source_service = oxc_diagnostics::NamedSource::new(&path.to_string_lossy(), source_arc);
 
         let error_messages: Vec<String> = parsed
             .errors

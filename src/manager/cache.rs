@@ -472,17 +472,18 @@ fn sync_directory(path: &Path) -> Result<()> {
     #[cfg(windows)]
     {
         let _ = path;
-        return Ok(());
+        Ok(())
     }
     #[cfg(not(windows))]
     {
-        if let Ok(dir) = std::fs::File::open(path) {
-            if let Err(e) = dir.sync_all() {
-                if e.raw_os_error() != Some(22) {
-                    return Err(e);
-                }
-            }
+        if let Some(e) = std::fs::File::open(path)
+            .ok()
+            .and_then(|dir| dir.sync_all().err())
+            .filter(|e| e.raw_os_error() != Some(22))
+        {
+            Err(e)
         }
+
         Ok(())
     }
 }
@@ -491,18 +492,17 @@ fn sync_parent_dir(path: &Path) -> Result<()> {
     #[cfg(windows)]
     {
         let _ = path;
-        return Ok(());
+        Ok(())
     }
     #[cfg(not(windows))]
     {
-        if let Some(parent) = path.parent() {
-            if let Ok(dir) = std::fs::File::open(parent) {
-                if let Err(e) = dir.sync_all() {
-                    if e.raw_os_error() != Some(22) {
-                        return Err(e);
-                    }
-                }
-            }
+        if let Some(e) = path
+            .parent()
+            .and_then(|parent| std::fs::File::open(parent).ok())
+            .and_then(|dir| dir.sync_all().err())
+            .filter(|e| e.raw_os_error() != Some(22))
+        {
+            return Err(e);
         }
         Ok(())
     }
