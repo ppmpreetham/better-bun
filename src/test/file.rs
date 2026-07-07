@@ -5,7 +5,7 @@ use std::time::Duration;
 use crate::byte_slices;
 
 // standard test notations users use
-const TEST_EXTENSIONS: &[&[u8]] = byte_slices![
+pub const TEST_EXTENSIONS: &[&[u8]] = byte_slices![
     ".test.js",
     ".test.ts",
     ".test.jsx",
@@ -22,10 +22,12 @@ const TEST_EXTENSIONS: &[&[u8]] = byte_slices![
 
 const IGNORED_DIRS: &[&[u8]] = byte_slices!["node_modules", ".git", "dist", "coverage", "target"];
 
-// find test files in proj
-// momo test login -> src/utils/login.test.ts
-// momo test controllers -> src/controllers/user.test.ts
-pub fn find_test_files(root_path: impl AsRef<Path>, cli_filter: Option<&str>) -> Vec<PathBuf> {
+// find files in proj matching specific extensions
+pub fn find_files(
+    root_path: impl AsRef<Path>,
+    cli_filter: Option<&str>,
+    extensions: &[&[u8]],
+) -> Vec<PathBuf> {
     WalkDirGeneric::<((), ())>::new(root_path)
         .skip_hidden(true)
         .parallelism(RayonDefaultPool {
@@ -43,7 +45,7 @@ pub fn find_test_files(root_path: impl AsRef<Path>, cli_filter: Option<&str>) ->
         .filter(|entry| entry.file_type.is_file())
         .filter(|entry| {
             let file_name_bytes = entry.file_name.as_os_str().as_encoded_bytes();
-            TEST_EXTENSIONS
+            extensions
                 .iter()
                 .any(|ext| file_name_bytes.ends_with(ext))
         })

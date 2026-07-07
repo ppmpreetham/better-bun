@@ -1,3 +1,4 @@
+mod check;
 mod cli;
 mod macros;
 mod manager;

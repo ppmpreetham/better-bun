@@ -387,7 +387,9 @@ fn validate_package_id(package_id: &str) -> Result<()> {
         return Err(Error::new(
             ErrorKind::InvalidInput,
             format!("Invalid package ID: '{package_id}'"),
-    })
+        ));
+    }
+    Ok(())
 }
 
 #[inline]
@@ -451,10 +453,11 @@ fn best_effort_remove(path: &Path) {
 
         files.into_par_iter().for_each(|p| {
             if let Ok(mut perms) = std::fs::metadata(&p).map(|m| m.permissions())
-                && perms.readonly() {
-                    perms.set_readonly(false);
-                    let _ = std::fs::set_permissions(&p, perms);
-                }
+                && perms.readonly()
+            {
+                perms.set_readonly(false);
+                let _ = std::fs::set_permissions(&p, perms);
+            }
         });
     }
 

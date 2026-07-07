@@ -124,6 +124,12 @@ pub enum Commands {
         env: String,
     },
 
+    /// Check JS/TS files for syntax errors
+    #[command(alias = "c")]
+    Check {
+        filter: Option<String>,
+    },
+
     /// Test JS/TS files
     #[command(alias = "t")]
     Test {

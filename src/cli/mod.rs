@@ -68,6 +68,14 @@ impl Cli {
                 test(filter.as_deref());
             }
 
+            types::Commands::Check { filter } => {
+                use crate::check::check;
+                if let Some(ref filter) = filter {
+                    println!("Checking files matching: {filter}");
+                }
+                check(filter.as_deref());
+            }
+
             types::Commands::Version { format } => {
                 println!("{format:?}");
             }
