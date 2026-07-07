@@ -6,6 +6,7 @@ use std::io::{Error, ErrorKind, Result};
 use std::path::{Component, Path, PathBuf};
 use std::sync::Arc;
 use std::sync::OnceLock;
+use tempfile::TempDir;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum LinkStrategy {
@@ -33,7 +34,7 @@ pub struct Cache {
     refresh: Refresh,
     durability: Durability,
     store: Arc<ContentAddressableStore>,
-    _temp_dir: Option<Arc<tempfile::TempDir>>,
+    _temp_dir: Option<Arc<TempDir>>,
 }
 
 impl Cache {
@@ -44,7 +45,7 @@ impl Cache {
         no_cache: bool,
     ) -> Result<Self> {
         let (actual_root, temp_dir) = if no_cache {
-            let t_dir = tempfile::TempDir::new()?;
+            let t_dir = TempDir::new()?;
             (t_dir.path().to_path_buf(), Some(Arc::new(t_dir)))
         } else {
             (root, None)
@@ -102,14 +103,10 @@ impl Cache {
         let mut rw_lock = RwLock::new(file);
 
         if shared {
-            let _guard = rw_lock
-                .read()
-                .map_err(|e| Error::other(e))?;
+            let _guard = rw_lock.read().map_err(|e| Error::other(e))?;
             op(&target_dir)
         } else {
-            let _guard = rw_lock
-                .write()
-                .map_err(|e| Error::other(e))?;
+            let _guard = rw_lock.write().map_err(|e| Error::other(e))?;
             op(&target_dir)
         }
     }
@@ -316,8 +313,7 @@ impl ContentAddressableStore {
                 },
             );
 
-        dirs.into_iter()
-            .try_for_each(create_dir_all)?;
+        dirs.into_iter().try_for_each(create_dir_all)?;
 
         let strategy = self.get_strategy();
 
@@ -387,12 +383,10 @@ fn validate_package_id(package_id: &str) -> Result<()> {
         ));
     }
 
-    package_id.chars().try_for_each(|c| match c {
-        '/' | '\\' | ':' | '*' | '?' | '"' | '<' | '>' | '|' => Err(Error::new(
+    if package_id.contains(['/', '\\', ':', '*', '?', '"', '<', '>', '|']) {
+        return Err(Error::new(
             ErrorKind::InvalidInput,
             format!("Invalid package ID: '{package_id}'"),
-        )),
-        _ => Ok(()),
     })
 }
 
